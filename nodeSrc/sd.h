@@ -1,7 +1,7 @@
 #pragma once
 
+void sd_initMcSock(void);
 
-#define MULTICAST_GROUP "239.0.0.1"
-#define PORT 12345
+void sd_initCenSock(void);
 
-void find_broker(int* s);
+void sd_findCentral(void);

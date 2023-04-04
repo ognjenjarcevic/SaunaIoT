@@ -8,8 +8,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define MULTICAST_GROUP "239.0.0.1"
-#define PORT 12345
+#define MULTICAST_GROUP "239.1.1.1"
+#define PORT 12346
 
 int main()
 {
@@ -42,7 +42,7 @@ int main()
     socklen_t addrlen = sizeof(addr);
 
     // create socket
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sockfd < 0) {
         printf("socket creation failed\n");
         //exit(EXIT_FAILURE);
@@ -68,7 +68,7 @@ int main()
         //exit(EXIT_FAILURE);
     }
 
-    printf("Monitoring setup finished, sending messages");
+    printf("Monitoring setup finished, sending messages\n");
 
     while(1)
     {
