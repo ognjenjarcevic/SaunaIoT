@@ -1,0 +1,32 @@
+IDIR =../include
+CC=gcc
+CFLAGS=-ggdb -I$(IDIR) -Wall
+
+LDIR=lib
+BDIR=monitorOut
+ODIR=$(BDIR)/obj
+EXECUTABLE=$(BDIR)/monitor
+
+LIBS=-lm
+
+#promeniti nazive fajlova
+_DEPS = #
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+
+#promeniti nazive fajlova
+_OBJ = main.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+
+$(ODIR)/%.o: monitorSrc/%.c $(DEPS)	
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+monitor: $(OBJ)
+	mkdir -p $(ODIR) $(BDIR)
+	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+
+.PHONY: clean
+
+clean:	
+	rm -f monitor $(ODIR)/*.o *~ core $(INCDIR)/*~
+	rm -f $(EXECUTABLE)

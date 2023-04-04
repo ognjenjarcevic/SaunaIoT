@@ -1,0 +1,34 @@
+IDIR =include
+CC=gcc
+CFLAGS=-ggdb -I$(IDIR) -Wall
+
+LDIR=lib
+BDIR=nodeOut
+ODIR=$(BDIR)/obj
+EXECUTABLE=$(BDIR)/node
+
+LIBS=-lm
+
+#dodati nazive fajlova
+_DEPS = #sd.h
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+
+#promeniti nazive fajlova
+_OBJ = main.o sd.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+
+$(ODIR)/%.o: nodeSrc/%.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+# the build target executable:
+node: $(OBJ)
+	mkdir -p $(ODIR) $(BDIR)
+	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+
+# The .PHONY rule keeps make from doing something with a file named clean
+.PHONY: clean
+
+clean:
+	rm -f node $(ODIR)/*.o *~ core $(INCDIR)/*~
+	rm -f $(EXECUTABLE)
