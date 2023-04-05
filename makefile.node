@@ -1,6 +1,6 @@
 IDIR =include
 CC=gcc
-CFLAGS=-ggdb -I$(IDIR) -Wall
+CFLAGS=-ggdb -I$(IDIR) -Wall -pthread
 
 LDIR=lib
 BDIR=nodeOut

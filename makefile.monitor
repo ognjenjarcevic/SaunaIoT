@@ -1,6 +1,6 @@
 IDIR =../include
 CC=gcc
-CFLAGS=-ggdb -I$(IDIR) -Wall
+CFLAGS=-ggdb -I$(IDIR) -Wall -pthread
 
 LDIR=lib
 BDIR=monitorOut
@@ -10,11 +10,11 @@ EXECUTABLE=$(BDIR)/monitor
 LIBS=-lm
 
 #promeniti nazive fajlova
-_DEPS = #
+_DEPS = #sd.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 #promeniti nazive fajlova
-_OBJ = main.o
+_OBJ = main.o sd.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
