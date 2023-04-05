@@ -2,11 +2,17 @@
 
 int main()
 {   
+    sd_initIpAddress();
 
     sd_initMcSock();
 
+    sd_initUnicastSock();
+    
+    sd_startReceiving();
+
     sd_startAdvertising();
 
+    
 
 
 
