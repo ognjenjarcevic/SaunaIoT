@@ -1,4 +1,7 @@
 #include "sd.h"
+#include "sdMess.h"
+#include "sdTracking.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -142,10 +145,11 @@ static void* sd_multicastAdvert(void* parm)
         if (sendto(context.sockMc, context.advertMessage, strlen(context.advertMessage)+1, 0, (struct sockaddr*)&context.addrMc, context.addrLen) < 0)
         {
             printf("sendto failed\n");
-            //exit(EXIT_FAILURE);
+            return NULL;
         }
-        printf("sent %s\n", context.advertMessage);
-        sleep(9);
+        //printf("SD multicast adveritising\n");
+        //printf("sent %s\n", context.advertMessage);
+        sleep(SD_MON_AD_PERIOD);
     }
     return NULL;
 }
@@ -157,14 +161,10 @@ void sd_startAdvertising(void)
     int status = pthread_create(&context.updateThread, NULL, sd_multicastAdvert, NULL);
     if(status < 0)
         printf("Advertising pthread_create failed\n");
-    //else
-        //printf("pthread_create success\n");
 
     status = pthread_detach(context.updateThread);
     if(status < 0)
         printf("Advertising pthread_detach failed\n");
-    //else
-        //printf("pthread_detach success\n");
 }
 
 
@@ -172,13 +172,32 @@ static void* sd_receiveMessage(void* parm)
 {
     while(1)
     {
-        //printf("\tReceiving message\n");
         if (recvfrom(context.sockSens, context.receiver, sizeof(context.receiver), 0, (struct sockaddr*)&context.addrCen, &context.addrLen) < 0)
         {
             printf("Error receiving SD message..\n");
-            //exit(EXIT_FAILURE);
         }
-        printf("received: %s\n", context.receiver);
+        //printf("received: %s\n", context.receiver);
+
+        SDMessage s = -1;
+        // Decode the received message
+        if (strncmp(context.receiver, SD_SEN_ALIVE_STR, sizeof(context.receiver)) == 0)
+        {
+            s = SD_SEN_ALIVE;
+        }
+        if (strncmp(context.receiver, SD_SEN_BYEBYE_STR, sizeof(context.receiver))== 0)
+        {
+            s = SD_SEN_BYEBYE;
+        }
+        if (strncmp(context.receiver, SD_ACT_ALIVE_STR, sizeof(context.receiver))== 0)
+        {
+            s = SD_ACT_ALIVE;
+        }
+        if (strncmp(context.receiver, SD_ACT_BYEBYE_STR, sizeof(context.receiver)) == 0)
+        {
+            s = SD_ACT_BYEBYE;
+        }
+
+        sdTracking_update(s);
     }
 
     return NULL;

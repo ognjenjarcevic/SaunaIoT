@@ -1,4 +1,5 @@
 #include "sd.h"
+#include "sdTracking.h"
 
 int main()
 {   
@@ -12,6 +13,7 @@ int main()
 
     sd_startAdvertising();
 
+    sdTracking_start();
     
 
 

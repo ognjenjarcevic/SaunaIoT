@@ -1,5 +1,8 @@
 #pragma once
 
+#define SD_MON_AD_PERIOD 3
+
+
 /// @brief Initializes the Multicast socket used for Service Discovery
 void sd_initMcSock(void);
 

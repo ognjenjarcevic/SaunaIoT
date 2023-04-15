@@ -10,11 +10,11 @@ EXECUTABLE=$(BDIR)/monitor
 LIBS=-lm
 
 #promeniti nazive fajlova
-_DEPS = #sd.h
+_DEPS = #sd.h sdTracking.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 #promeniti nazive fajlova
-_OBJ = main.o sd.o
+_OBJ = main.o sd.o sdTracking.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 

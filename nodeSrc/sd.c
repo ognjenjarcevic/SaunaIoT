@@ -1,4 +1,6 @@
 #include "sd.h"
+#include "sdMess.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -15,6 +17,12 @@
 /// @brief Port on the SD node that used to receive multicast messages from the central
 /// @note Needs to be the same as Monitor's MULTICAST_PORT
 #define MULTICAST_PORT 12346
+
+typedef enum SDRole
+{
+    SD_ROLE_SEN,
+    SD_ROLE_ACT,
+} SDNodeRole;
 
 struct Context
 {
@@ -42,12 +50,28 @@ struct Context
     /// @brief Message received from SD central on the Multicast channel
     char messageMc[32];
 
+    /// @brief "Role" ID to be sent with the alive message
+    SDNodeRole role;
+
     pthread_t updateThread;
 
 };
 static struct Context context = {
     .addrLen = sizeof(struct sockaddr_in),
 };
+
+void sd_initRole(char* argRole)
+{
+    /// @brief Role starts with an `s`, it is a sensor
+    if(argRole[0] == 's')
+    {
+        context.role = SD_ROLE_SEN;
+    }
+    if(argRole[0] == 'a')
+    {
+        context.role = SD_ROLE_ACT;
+    }
+}
 
 void sd_initMcSock(void)
 {
@@ -101,11 +125,7 @@ void sd_findCentral(void)
         }
         else
         {
-            printf("SD message received: %s\n", context.messageMc);
-            // Parse the message into the ipAddress, and port to be targeted
-
-            // TODO: Basic check can be performed if the received message is an IP address
-            // Check successful
+            //printf("SD central found: %s\n", context.messageMc);
             break;
         }
         sleep(1);
@@ -142,14 +162,22 @@ static void *sd_sendStatusUpdate(void* parm)
 {
     while(1)
     {
-        char updateMessage[] = "Still alive";
+        char* updateMessage;
+        if (context.role == SD_ROLE_ACT)
+        {
+            updateMessage = SD_ACT_ALIVE_STR;
+        }
+        if (context.role == SD_ROLE_SEN)
+        {
+            updateMessage = SD_SEN_ALIVE_STR;
+        }
         if (sendto(context.sockCen, updateMessage, strlen(updateMessage)+1, 0, (struct sockaddr*)&context.addrCen, context.addrLen) < 0)
         {
             printf("sendto failed\n");
             //exit(EXIT_FAILURE);
         }
-        printf("\tSent alive..\n\n");
-        sleep(2);
+        // printf("\tSent alive..\n\n");
+        sleep(SD_NODE_ALIVE_PERIOD);
     }
     return NULL;
 }
@@ -169,4 +197,22 @@ void sd_startSendingUpdates(void)
         printf("Alive pthread_detach failed");
     // else
     //     printf("pthread_detach success\n");
+}
+
+void sd_sendByeBye(void)
+{
+    char* updateMessage;
+    if (context.role == SD_ROLE_ACT)
+    {
+        updateMessage = SD_ACT_BYEBYE_STR;
+    }
+    if (context.role == SD_ROLE_SEN)
+    {
+        updateMessage = SD_SEN_BYEBYE_STR;
+    }
+    if (sendto(context.sockCen, updateMessage, strlen(updateMessage)+1, 0, (struct sockaddr*)&context.addrCen, context.addrLen) < 0)
+    {
+        printf("sendto failed\n");
+        //exit(EXIT_FAILURE);
+    }
 }
