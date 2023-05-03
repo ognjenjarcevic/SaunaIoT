@@ -1,6 +1,7 @@
 #include "sd.h"
 #include "sdMess.h"
 #include "sdTracking.h"
+#include "userComms.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +38,7 @@ struct Context
     /// @brief Socket for exchanging messages with the Sensor node
     int sockSens;
 
-    /// @brief Address for exchanging messages with the SD Central
+    /// @brief Address for exchanging messages through the Unicast channel
     struct sockaddr_in addrCen;
 
     /// @brief IP address of the SD Central
@@ -179,25 +180,47 @@ static void* sd_receiveMessage(void* parm)
         //printf("received: %s\n", context.receiver);
 
         SDMessage s = -1;
+        int sdTrack = 0;
         // Decode the received message
         if (strncmp(context.receiver, SD_SEN_ALIVE_STR, sizeof(context.receiver)) == 0)
         {
             s = SD_SEN_ALIVE;
+            sdTrack = 1;
         }
-        if (strncmp(context.receiver, SD_SEN_BYEBYE_STR, sizeof(context.receiver))== 0)
+        if (strncmp(context.receiver, SD_SEN_BYEBYE_STR, sizeof(context.receiver)) == 0)
         {
             s = SD_SEN_BYEBYE;
+            sdTrack = 1;
         }
-        if (strncmp(context.receiver, SD_ACT_ALIVE_STR, sizeof(context.receiver))== 0)
+        if (strncmp(context.receiver, SD_ACT_ALIVE_STR, sizeof(context.receiver)) == 0)
         {
             s = SD_ACT_ALIVE;
+            sdTrack = 1;
         }
         if (strncmp(context.receiver, SD_ACT_BYEBYE_STR, sizeof(context.receiver)) == 0)
         {
             s = SD_ACT_BYEBYE;
+            sdTrack = 1;
         }
+        if (sdTrack == 1)
+        {
+            sdTracking_update(s);
+        }
+        else
+        {
+            int status = userComms_recv(context.receiver);
 
-        sdTracking_update(s);
+            if (status == 0)
+            {
+                char* reply = userComms_replMess();
+                if (sendto(context.sockSens, reply, strlen(reply)+1, 0, (struct sockaddr*)&context.addrCen, context.addrLen) < 0)
+                {
+                    printf("sendto failed\n");
+                    return NULL;
+                }
+            }
+
+        }
     }
 
     return NULL;
